@@ -68,7 +68,7 @@ def cast_fireball(*args, **kwargs):
                 results.append({'message': Message(f'The {entity.name} gets burned for {damage} hit points', libtcod.orange)})
                 results.extend(entity.fighter.take_damage(damage))
             elif entity.item:
-                results.append({'message': Message(f'The {entity.name} gets consumed by the fireball!', libtcod.red)})
+                results.append({'message': Message(f'The {entity.name} is consumed by the fireball!', libtcod.red)})
                 entities.remove(entity)
             
 

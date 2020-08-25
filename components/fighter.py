@@ -2,11 +2,36 @@ import tcod as libtcod
 from game_messages import Message
 
 class Fighter:
-    def __init__(self, hp, defense, power):
-        self.max_hp = hp
+    def __init__(self, hp, defense, power, xp=0):
+        self.base_max_hp = hp
         self.hp = hp
-        self.defense = defense
-        self.power = power
+        self.base_defense = defense
+        self.base_power = power
+        self.xp = xp
+
+    @property
+    def max_hp(self):
+        if self.owner and self.owner.equipment:
+            bonus = self.owner.equipment.max_hp_bonus
+        else:
+            bonus = 0
+        return self.base_max_hp + bonus
+
+    @property
+    def power(self):
+        if self.owner and self.owner.equipment:
+            bonus = self.owner.equipment.power_bonus
+        else:
+            bonus = 0
+        return self.base_power + bonus
+
+    @property
+    def defense(self):
+        if self.owner and self.owner.equipment:
+            bonus = self.owner.equipment.defense_bonus
+        else:
+            bonus = 0
+        return self.base_defense + bonus
     
     def take_damage(self, amount):
         results = []
@@ -14,7 +39,7 @@ class Fighter:
         self.hp -= amount
 
         if self.hp <= 0:
-            results.append({'dead' : self.owner})
+            results.append({'dead' : self.owner, 'xp': self.xp})
 
         return results
 
