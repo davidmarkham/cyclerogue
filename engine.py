@@ -39,10 +39,10 @@ def main():
         libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS | libtcod.EVENT_MOUSE, key, mouse)
 
         if show_main_menu:
-            main_menu(con, main_menu_background_image, constants.screen_width, constants.screen_height)
+            main_menu(con, main_menu_background_image, constants)
 
             if show_load_error_message:
-                message_box(con, 'No save game to load', 50, constants.screen_width, constants.screen_height)
+                message_box(con, 'No save game to load', 50, constants)
 
             libtcod.console_flush()
 
@@ -90,7 +90,7 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
         libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS | libtcod.EVENT_MOUSE, key, mouse)
         if fov_recompute:
             recompute_fov(fov_map, player.x, player.y, constants.fov_radius, constants.fov_light_walls, constants.fov_algorithm)
-        render_all(con, panel, entities, player, game_map, fov_map, fov_recompute, message_log, constants.screen_width, constants.screen_height, constants.bar_width, constants.panel_height, constants.panel_y, mouse, constants.colors, game_state)
+        render_all(con, panel, mouse, entities, player, game_map, fov_map, fov_recompute, message_log, game_state, constants)
         fov_recompute = False
         libtcod.console_flush()
 

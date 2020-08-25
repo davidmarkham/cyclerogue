@@ -1,12 +1,12 @@
 import tcod as libtcod
 
 
-def menu(con, header, options, width, screen_width, screen_height):
+def menu(con, header, options, width, constants):
     if len(options) > 26: 
         raise ValueError('Cannot have a menu with more than 26 options.')
 
     # Calculate total height for the header after auto-wrap and one line per option
-    header_height = libtcod.console_get_height_rect(con, 0, 0, width, screen_height, header)
+    header_height = libtcod.console_get_height_rect(con, 0, 0, width, constants.screen_height, header)
     height = len(options) + header_height
 
     # Create an off-screen console that represents the menu's window
@@ -26,12 +26,12 @@ def menu(con, header, options, width, screen_width, screen_height):
         letter_index += 1
 
     # Blit the contents of "window" to the root console
-    x = int(screen_width / 2 - width / 2)
-    y = int(screen_height / 2 - height / 2)
+    x = int(constants.screen_width / 2 - width / 2)
+    y = int(constants.screen_height / 2 - height / 2)
     libtcod.console_blit(window, 0, 0, width, height, 0, x, y, 1.0, 0.7)
 
     
-def inventory_menu(con, header, player, inventory_width, screen_width, screen_height):
+def inventory_menu(con, header, player, inventory_width, constants):
     # Shows a menu with each item of the inventory as an option
     if len(player.inventory.items) == 0:
         options = ['Inventory is empty.']
@@ -47,26 +47,26 @@ def inventory_menu(con, header, player, inventory_width, screen_width, screen_he
                 options.append(item.name)
 
 
-    menu(con, header, options, inventory_width, screen_width, screen_height)
+    menu(con, header, options, inventory_width, constants)
 
 
-def main_menu(con, background_image, screen_width, screen_height):
+def main_menu(con, background_image, constants):
     libtcod.image_blit_2x(background_image, 0, 0, 0)
 
     libtcod.console_set_default_foreground(0, libtcod.dark_red)
-    libtcod.console_print_ex(0, int(screen_width / 2), int(screen_height / 2) - 4, libtcod.BKGND_NONE, libtcod.CENTER, 'CycleRogue')
-    libtcod.console_print_ex(0, int(screen_width / 2), int(screen_height - 2), libtcod.BKGND_NONE, libtcod.CENTER, 'By David Markham')
+    libtcod.console_print_ex(0, int(constants.screen_width / 2), int(constants.screen_height / 2) - 4, libtcod.BKGND_NONE, libtcod.CENTER, 'CycleRogue')
+    libtcod.console_print_ex(0, int(constants.screen_width / 2), int(constants.screen_height - 2), libtcod.BKGND_NONE, libtcod.CENTER, 'By David Markham')
 
-    menu(con, '', ['Play a new game', 'Continue last game', 'Quit'], 24, screen_width, screen_height)
+    menu(con, '', ['Play a new game', 'Continue last game', 'Quit'], 24, constants)
 
-def level_up_menu(con, header, player, menu_width, screen_width, screen_height):
+def level_up_menu(con, header, player, menu_width, constants):
     options = [f'Constitution (+20 Max HP, from {player.fighter.max_hp}',
                f'Strength (+1 attack, from {player.fighter.power}',
                f'Agility (+1 defense, from {player.fighter.defense}']
 
-    menu(con, header, options, menu_width, screen_width, screen_height)
+    menu(con, header, options, menu_width, constants)
 
-def character_screen(player, character_screen_width, character_screen_height, screen_width, screen_height):
+def character_screen(player, character_screen_width, character_screen_height, constants):
     window = libtcod.console_new(character_screen_width, character_screen_height)
 
     libtcod.console_set_default_foreground(window, libtcod.white)
@@ -79,10 +79,10 @@ def character_screen(player, character_screen_width, character_screen_height, sc
     libtcod.console_print_rect_ex(window, 0, 7, character_screen_width, character_screen_height, libtcod.BKGND_NONE, libtcod.LEFT, f'Attack: {player.fighter.base_power}+{player.equipment.power_bonus}')
     libtcod.console_print_rect_ex(window, 0, 8, character_screen_width, character_screen_height, libtcod.BKGND_NONE, libtcod.LEFT, f'Defense: {player.fighter.base_defense}+{player.equipment.defense_bonus}')
 
-    x = screen_width // 2 - character_screen_width // 2
-    y = screen_height // 2 - character_screen_height // 2
+    x = constants.screen_width // 2 - character_screen_width // 2
+    y = constants.screen_height // 2 - character_screen_height // 2
     libtcod.console_blit(window, 0, 0, character_screen_width, character_screen_height, 0, x, y, 1.0, 0.7)
     
 
-def message_box(con, header, width, screen_width, screen_height):
-    menu(con, header, [], width, screen_width, screen_height)
+def message_box(con, header, width, constants):
+    menu(con, header, [], width, constants)
