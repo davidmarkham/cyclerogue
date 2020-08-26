@@ -26,12 +26,16 @@ class Constants:
     message_width = screen_width - bar_width - 2
     message_height = panel_height - 1
 
-    map_width = 80
-    map_height = 43
+    map_width = 200
+    map_height = 200
+
+    view_width = 80
+    view_height = 43
 
     room_max_size = 10
     room_min_size = 6
-    max_rooms = 30
+    max_rooms = 50
+    max_extra_tunnels = 15
 
     fov_algorithm = 0
     fov_light_walls = True
@@ -44,7 +48,7 @@ class Constants:
         'light_ground': libtcod.Color(200, 180, 50)
     }
 
-def get_game_variables():
+def get_game_variables(constants):
     fighter_component = Fighter(hp=100, defense=1, power=2)
     inventory_conponent = Inventory(26)
     level_component = Level()
@@ -58,8 +62,8 @@ def get_game_variables():
     player.inventory.add_item(dagger)
     player.equipment.toggle_equip(dagger)
 
-    game_map = GameMap(Constants.map_width, Constants.map_height)
-    game_map.make_map(Constants.max_rooms, Constants.room_min_size, Constants.room_max_size, Constants.map_width, Constants.map_height, player, entities)
+    game_map = GameMap(constants)
+    game_map.make_map(constants, player, entities)
 
     message_log = MessageLog(Constants.message_x, Constants.message_width, Constants.message_height)
 

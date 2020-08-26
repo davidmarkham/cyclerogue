@@ -55,7 +55,7 @@ def main():
             if show_load_error_message and (new_game or load_saved_game or exit_game):
                 show_load_error_message = False
             elif new_game:
-                player, entities, game_map, message_log, game_state = get_game_variables()
+                player, entities, game_map, message_log, game_state = get_game_variables(constants)
                 game_state = GameStates.PLAYERS_TURN
                 show_main_menu = False
             elif load_saved_game:
@@ -94,7 +94,7 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
         fov_recompute = False
         libtcod.console_flush()
 
-        clear_all(con, entities)
+        clear_all(con, entities, game_map)
 
         action = handle_keys(key, game_state)
         mouse_action = handle_mouse(mouse)

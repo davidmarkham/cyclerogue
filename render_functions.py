@@ -33,24 +33,34 @@ def render_bar(panel, x, y, total_width, name, value, maximum, bar_color, back_c
     libtcod.console_print_ex(panel, int(x+total_width / 2), y, libtcod.BKGND_NONE, libtcod.CENTER, f'{name}: {value}/{maximum}')
 
 def render_all(con, panel, mouse, entities, player, game_map, fov_map, fov_recompute, message_log, game_state, constants):
+    # Check to see if the view window needs updating
+    if ((player.x < game_map.view_x_min + constants.view_width // 4 and game_map.view_x_min > 0) or 
+        (player.y < game_map.view_y_min + constants.view_height // 4 and game_map.view_y_min > 0) or 
+        (player.x > game_map.view_x_max - constants.view_width // 4 and game_map.view_x_max < game_map.width) or 
+        (player.y > game_map.view_y_max - constants.view_height // 4 and game_map.view_y_max < game_map.height)):
+        game_map.set_view_range(player, constants)
+        # clear the view window
+        libtcod.console_clear(con)
+
+    
     if fov_recompute:
-        # Draw all the tiles in the game map
-        for y in range(game_map.height):
-            for x in range(game_map.width):
+        # Draw all the tiles in the view
+        for y in range(game_map.view_y_min, game_map.view_y_max):
+            for x in range(game_map.view_x_min, game_map.view_x_max):
                 visible = libtcod.map_is_in_fov(fov_map, x, y)
                 #visible = True
                 wall = game_map.tiles[x][y].block_sight
                 if visible:
                     if wall:
-                        libtcod.console_set_char_background(con, x, y, constants.colors.get('light_wall'), libtcod.BKGND_SET)
+                        libtcod.console_set_char_background(con, x - game_map.view_x_min, y - game_map.view_y_min, constants.colors.get('light_wall'), libtcod.BKGND_SET)
                     else:
-                        libtcod.console_set_char_background(con, x, y, constants.colors.get('light_ground'), libtcod.BKGND_SET)
+                        libtcod.console_set_char_background(con, x - game_map.view_x_min, y - game_map.view_y_min, constants.colors.get('light_ground'), libtcod.BKGND_SET)
                     game_map.tiles[x][y].explored = True
                 elif game_map.tiles[x][y].explored:
                     if wall:
-                        libtcod.console_set_char_background(con, x, y, constants.colors.get('dark_wall'), libtcod.BKGND_SET)
+                        libtcod.console_set_char_background(con, x - game_map.view_x_min, y - game_map.view_y_min, constants.colors.get('dark_wall'), libtcod.BKGND_SET)
                     else:
-                        libtcod.console_set_char_background(con, x, y, constants.colors.get('dark_ground'), libtcod.BKGND_SET)
+                        libtcod.console_set_char_background(con, x - game_map.view_x_min, y - game_map.view_y_min, constants.colors.get('dark_ground'), libtcod.BKGND_SET)
 
             
     # Draw all entities in the list
@@ -91,17 +101,18 @@ def render_all(con, panel, mouse, entities, player, game_map, fov_map, fov_recom
     elif game_state == GameStates.CHARACTER_SCREEN:
         character_screen(player, 30, 10, constants)
 
-def clear_all(con, entities):
+def clear_all(con, entities, game_map):
     for entity in entities:
-        clear_entity(con, entity)
+        clear_entity(con, entity, game_map)
 
 
 def draw_entity(con, entity, fov_map, game_map):
-    if libtcod.map_is_in_fov(fov_map, entity.x, entity.y) or (entity.stairs and game_map.tiles[entity.x][entity.y].explored):
+    if ((libtcod.map_is_in_fov(fov_map, entity.x, entity.y) or (entity.stairs and game_map.tiles[entity.x][entity.y].explored)) and
+        entity.x > game_map.view_x_min and entity.x < game_map.view_x_max and entity.y > game_map.view_y_min and entity.y < game_map.view_y_max):
         libtcod.console_set_default_foreground(con, entity.color)
-        libtcod.console_put_char(con, entity.x, entity.y, entity.char, libtcod.BKGND_NONE)
+        libtcod.console_put_char(con, entity.x - game_map.view_x_min, entity.y - game_map.view_y_min, entity.char, libtcod.BKGND_NONE)
 
 
-def clear_entity(con, entity):
+def clear_entity(con, entity, game_map):
     # erase the character that represents this object
-    libtcod.console_put_char(con, entity.x, entity.y, ' ', libtcod.BKGND_NONE)
+    libtcod.console_put_char(con, entity.x - game_map.view_x_min, entity.y - game_map.view_y_min, ' ', libtcod.BKGND_NONE)
