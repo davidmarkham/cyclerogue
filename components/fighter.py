@@ -1,4 +1,4 @@
-import tcod as libtcod
+import tcod
 from game_messages import Message
 
 class Fighter:
@@ -53,8 +53,8 @@ class Fighter:
         damage = self.power - target.fighter.defense
 
         if damage > 0:
-            results.append({'message':Message(f'{self.owner.name.capitalize()} attacks {target.name} for {damage}.', libtcod.white)})
+            results.append({'message':Message(f'{self.owner.name.capitalize()} attacks {target.name} for {damage}.', tcod.white)})
             results.extend(target.fighter.take_damage(damage))
         else:
-            results.append({'message':Message(f'{self.owner.name.capitalize()} attacks {target.name} but does no damage.', libtcod.white)})
+            results.append({'message':Message(f'{self.owner.name.capitalize()} attacks {target.name} but does no damage.', tcod.white)})
         return results

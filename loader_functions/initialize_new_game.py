@@ -1,4 +1,4 @@
-import tcod as libtcod
+import tcod
 
 from components.fighter import Fighter
 from components.inventory import Inventory
@@ -26,8 +26,8 @@ class Constants:
     message_width = screen_width - bar_width - 2
     message_height = panel_height - 1
 
-    map_width = 200
-    map_height = 200
+    map_width = 100
+    map_height = 100
 
     view_width = 80
     view_height = 43
@@ -35,17 +35,17 @@ class Constants:
     room_max_size = 10
     room_min_size = 6
     max_rooms = 50
-    max_extra_tunnels = 15
+    max_extra_tunnels = 10
 
     fov_algorithm = 0
     fov_light_walls = True
     fov_radius = 10
 
     colors = {
-        'dark_wall': libtcod.Color(0, 0, 100),
-        'dark_ground': libtcod.Color(50, 50, 150),
-        'light_wall': libtcod.Color(130, 110, 50),
-        'light_ground': libtcod.Color(200, 180, 50)
+        'dark_wall': tcod.Color(0, 0, 100),
+        'dark_ground': tcod.Color(50, 50, 150),
+        'light_wall': tcod.Color(130, 110, 50),
+        'light_ground': tcod.Color(200, 180, 50)
     }
 
 def get_game_variables(constants):
@@ -54,11 +54,11 @@ def get_game_variables(constants):
     level_component = Level()
     equipment_component = Equipment()
 
-    player = Entity(0, 0, '@', libtcod.white, 'Player', blocks=True, fighter=fighter_component, inventory=inventory_conponent, render_order=RenderOrder.ACTOR, level=level_component, equipment=equipment_component)
+    player = Entity(0, 0, '@', tcod.white, 'Player', blocks=True, fighter=fighter_component, inventory=inventory_conponent, render_order=RenderOrder.ACTOR, level=level_component, equipment=equipment_component)
     entities = [player]
 
     equippable_component = Equippable(EquipmentSlots.MAIN_HAND, power_bonus=2)
-    dagger = Entity(0, 0, '-', libtcod.sky, 'Dagger', equippable=equippable_component)
+    dagger = Entity(0, 0, '-', tcod.sky, 'Dagger', equippable=equippable_component)
     player.inventory.add_item(dagger)
     player.equipment.toggle_equip(dagger)
 
