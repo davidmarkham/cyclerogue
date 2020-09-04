@@ -74,14 +74,13 @@ def cast_fireball(*args, **kwargs):
 
     return results
 
-def cast_confuse(*args, **kwargs):
+def cast_confuse( *args, **kwargs):
     entities = kwargs.get('entities')
     fov_map = kwargs.get('fov_map')
     target_x = kwargs.get('target_x')
     target_y = kwargs.get('target_y')
 
     results = []
-
     if not tcod.map_is_in_fov(fov_map, target_x, target_y):
         results.append({'consumed': False, 'message': Message('You cannot target a tile outside your field of view.', tcod.yellow)})
         return results
@@ -99,4 +98,20 @@ def cast_confuse(*args, **kwargs):
     else:
         results.append({'consumed': False, 'message': Message('There is no targetable enemy at that location.', tcod.yellow)})
 
+    return results
+
+def wand(*args, **kwargs):
+    results = []
+    item_entity = args[1]
+    charges = item_entity.item.charges
+    if charges == 0:
+        results.append({'message': Message(f'The {item_entity.name} has no charges left.', tcod.red)})
+    else:
+        func = kwargs.get('cast_function')
+        cast_results = func(*args, **kwargs)
+        for cast_result in cast_results:
+            if cast_result.get('consumed'):
+                results.append({'item_used':True, 'charge_used': True, 'message': Message(f'You use your {item_entity.name}. It has {charges - 1} charges remaining', tcod.blue)})
+                cast_result.update({'consumed': False})
+        results.extend(cast_results)
     return results

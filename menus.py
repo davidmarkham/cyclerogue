@@ -40,11 +40,11 @@ def inventory_menu(con, header, player, inventory_width, constants):
 
         for item in player.inventory.items:
             if player.equipment.main_hand == item:
-                options.append(f'{item.name} (on main hand)')
+                options.append(f'{item.display_name} (on main hand)')
             elif player.equipment.off_hand == item:
-                options.append(f'{item.name} (on off hand)')
+                options.append(f'{item.display_name} (on off hand)')
             else:
-                options.append(item.name)
+                options.append(item.display_name)
 
 
     menu(con, header, options, inventory_width, constants)

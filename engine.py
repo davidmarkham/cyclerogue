@@ -190,8 +190,7 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
         if game_state == GameStates.TARGETING:
             if left_click:
                 target_x, target_y = left_click
-
-                item_use_results = player.inventory.use(targeting_item, entities = entities, fov_map = fov_map, target_x = target_x, target_y = target_y)
+                item_use_results = player.inventory.use(targeting_item, entities = entities, fov_map = fov_map, target_x = target_x+game_map.view_x_min, target_y = target_y+game_map.view_y_min)
                 player_turn_results.extend(item_use_results)
             elif right_click:
                 player_turn_results.append({'targeting_cancelled': True})
@@ -213,6 +212,7 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
             dead_entity = player_turn_result.get('dead')
             item_added = player_turn_result.get('item_added')
             item_consumed = player_turn_result.get('consumed')
+            item_used = player_turn_result.get('item_used')
             item_dropped = player_turn_result.get('item_dropped')
             equip = player_turn_result.get('equip')
             targeting = player_turn_result.get('targeting')
@@ -239,7 +239,7 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
 
                 game_state = GameStates.ENEMY_TURN
 
-            if item_consumed:
+            if item_consumed or item_used:
                 game_state = GameStates.ENEMY_TURN
 
             if targeting:
