@@ -1,3 +1,5 @@
+from random import choice
+
 class Rect:
     def __init__(self, x, y, w, h):
         self.x1 = x
@@ -13,3 +15,15 @@ class Rect:
     def intersect(self, other):
         # returns true if this rectangle intersects with another one
         return (self.x1 <= other.x2 and self.x2 >= other.x1 and self.y1 <= other.y2 and self.y2 >= other.y1)
+
+    def get_tiles(self):
+        tiles = []
+        for x in range(self.x1 + 1, self.x2):
+            for y in range(self.y1 + 1, self.y2):
+                tiles.append((x,y))
+        
+        return tiles
+
+    def get_random_tile(self):
+        tiles = self.get_tiles()
+        return choice(tiles)

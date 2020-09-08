@@ -85,6 +85,7 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
     previous_game_state = game_state
 
     targeting_item = None
+    player_running = None
 
     while not tcod.console_is_window_closed():
         tcod.sys_check_for_event(tcod.EVENT_KEY_PRESS | tcod.EVENT_MOUSE, key, mouse)
@@ -101,6 +102,7 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
 
         move = action.get('move')
         wait = action.get('wait')
+        run = action.get('run')
         pickup = action.get('pickup')
         show_inventory = action.get('show_inventory')
         drop_inventory = action.get('drop_inventory')
@@ -143,6 +145,124 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
                     break
             else:
                 message_log.add_message(Message('There is nothing here to pick up.', tcod.yellow))
+
+        if run and game_state == GameStates.PLAYERS_TURN:
+            message_log.add_message(Message('Which direction do you want to run?', tcod.yellow))
+            previous_game_state = game_state
+            game_state = GameStates.CHARACTER_RUN
+
+        if game_state.CHARACTER_RUN:
+            dir = action.get('dir')
+            if dir:
+                # Try to move the first step in the run
+                dx, dy = dir
+                dest_x = player.x + dx
+                dest_y = player.y + dy
+
+                if game_map.is_blocked(dest_x,dest_y) or get_blocking_entities_at_location(entities, dest_x, dest_y):
+                    # If blocked, put up message and return to previous game state
+                    message_log.add_message(Message('You can\'t run in that direction!', tcod.yellow))
+                    game_state = previous_game_state
+                else:
+                    # Set the run direction and get the blocked state for adjacent orthogonal directons
+                    player_running = dir
+                    if dx == 0:
+                        running_blocked_state = {(1, 0):game_map.is_blocked(player.x + 1,player.y), (-1, 0):game_map.is_blocked(player.x - 1 ,player.y)}
+                    elif dy == 0:
+                        running_blocked_state = {(0, 1):game_map.is_blocked(player.x,player.y + 1), (0, -1):game_map.is_blocked(player.x,player.y - 1)}
+                    else:
+                        running_blocked_state = {(dx, 0):game_map.is_blocked(player.x + dx,player.y), (0, dy):game_map.is_blocked(player.x,player.y + dy)}
+                    # Check for tunnel mode
+                    run_tunnel_mode = list(running_blocked_state.values())[0] or list(running_blocked_state.values())[1]
+                    # Make the move
+                    player.move(dx, dy)
+                    fov_recompute = True
+
+                    game_state = GameStates.ENEMY_TURN
+
+        if player_running and game_state == GameStates.PLAYERS_TURN:
+            if not run_tunnel_mode:
+                # Run algo for non-tunnels
+                # Check to see if the orthogonal blocked state has changed
+                for dir in running_blocked_state.keys():
+                    (dx, dy) = dir
+                    if running_blocked_state.get(dir) != game_map.is_blocked(player.x + dx, player.y + dy):
+                        player_running = None
+                        break
+                else:
+                    # Check for fighter entities in the fov
+                    for entity in entities:
+                        if not entity is player and tcod.map_is_in_fov(fov_map, entity.x, entity.y) and entity.fighter:
+                            player_running = None
+                            break
+                if player_running:
+                    # If the running flag wasn't reset by the checks, try to move
+                    dx, dy = player_running
+                    dest_x = player.x + dx
+                    dest_y = player.y + dy
+                    if game_map.is_blocked(dest_x,dest_y) or get_blocking_entities_at_location(entities, dest_x, dest_y):
+                        # Stop if blocked
+                        player_running = None
+                    else:
+                        # Run the next step in that direction
+                        player.move(dx, dy)
+                        fov_recompute = True
+
+                        game_state = GameStates.ENEMY_TURN
+            else:
+                # Tunnel mode
+                for entity in entities:
+                        if not entity is player and tcod.map_is_in_fov(fov_map, entity.x, entity.y) and entity.fighter:
+                            player_running = None
+                            break
+                else:
+                    # Check to see if the run direction is blocked first
+                    dx, dy = player_running
+                    dest_x = player.x + dx
+                    dest_y = player.y + dy
+                    if game_map.is_blocked(dest_x,dest_y) or get_blocking_entities_at_location(entities, dest_x, dest_y):
+                        # If it's blocked, check the two running blocked state directions.  
+                        # If only one is unblocked, change the run direction to that and set the new run direction
+                        (dx, dy) = list(running_blocked_state.keys())[0]
+                        dir1_blocked = game_map.is_blocked(player.x + dx, player.y + dy)
+                        (dx, dy) = list(running_blocked_state.keys())[1]
+                        dir2_blocked = game_map.is_blocked(player.x + dx, player.y + dy)
+                        if dir1_blocked ^ dir2_blocked:
+                            if dir1_blocked:
+                                player_running = list(running_blocked_state.keys())[1]
+                            else:
+                                player_running = list(running_blocked_state.keys())[0]
+                            # Update the blocking map, setting the expectation to false for both directions
+                            (dx, dy) = player_running
+                            if dx == 0:
+                                running_blocked_state = {(1, 0):True, (-1, 0):True}
+                            elif dy == 0:
+                                running_blocked_state = {(0, 1):True, (0, -1):True}
+                            # Run the next step in that direction
+                            player.move(dx, dy)
+                            fov_recompute = True
+
+                            game_state = GameStates.ENEMY_TURN
+
+                        else:
+                            # Stop running if both directions are unblocked
+                            player_running = None
+                    else:
+                        # Run the next step normally if the blocking state for the directions hasn't changed
+                        for dir in running_blocked_state.keys():
+                            (dx, dy) = dir
+                            if running_blocked_state.get(dir) != game_map.is_blocked(player.x + dx, player.y + dy):
+                                player_running = None
+                                break
+                        else:
+                            dx, dy = player_running
+                            dest_x = player.x + dx
+                            dest_y = player.y + dy
+                            player.move(dx, dy)
+                            fov_recompute = True
+
+                            game_state = GameStates.ENEMY_TURN
+
 
         if show_inventory:
             previous_game_state = game_state
@@ -196,7 +316,7 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
                 player_turn_results.append({'targeting_cancelled': True})
 
         if exit:
-            if game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY, GameStates.CHARACTER_SCREEN):
+            if game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY, GameStates.CHARACTER_SCREEN, GameStates.CHARACTER_RUN):
                 game_state = previous_game_state
             elif game_state == GameStates.TARGETING:
                 player_turn_results.append({'targeting_cancelled': True})

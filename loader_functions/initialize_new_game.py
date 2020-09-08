@@ -32,10 +32,14 @@ class Constants:
     view_width = 80
     view_height = 43
 
+    # Map Generation Parameters
     room_max_size = 10
     room_min_size = 6
-    max_rooms = 50
+    max_rooms = 25
+    min_extra_tunnels = 5
     max_extra_tunnels = 10
+    chance_extra_tunnel_from_tunnel = 80 # Percent
+    random_point_tunnel_chance = 75 # Percent
 
     fov_algorithm = 0
     fov_light_walls = True

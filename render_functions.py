@@ -47,8 +47,8 @@ def render_all(con, panel, mouse, entities, player, game_map, fov_map, fov_recom
         # Draw all the tiles in the view
         for y in range(game_map.view_y_min, game_map.view_y_max):
             for x in range(game_map.view_x_min, game_map.view_x_max):
-                visible = tcod.map_is_in_fov(fov_map, x, y)
-                #visible = True
+                #visible = tcod.map_is_in_fov(fov_map, x, y)
+                visible = True
                 wall = game_map.tiles[x][y].block_sight
                 if visible:
                     if wall:

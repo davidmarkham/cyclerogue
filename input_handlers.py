@@ -13,8 +13,8 @@ def handle_keys(key, game_state):
         return handle_inventory_keys(key)
     elif game_state == GameStates.LEVEL_UP:
         return handle_level_up_menu(key)
-    elif game_state == GameStates.CHARACTER_SCREEN:
-        return handle_character_screen(key)
+    elif game_state == GameStates.CHARACTER_RUN:
+        return handle_direction_keys(key)
 
     return {}
 
@@ -52,6 +52,8 @@ def handle_player_turn_keys(key):
         return {'take_stairs': True}
     elif key_char == 'c':
         return {'show_character_screen': True}
+    elif key_char == '.':
+        return {'run': True}
     
     if key.vk == tcod.KEY_ENTER and (key.lalt or key.ralt):
         # Alt+Enter Toggle full screen
@@ -141,4 +143,27 @@ def handle_mouse(mouse):
     elif mouse.rbutton_pressed:
         return {'right_click':(x, y)}
 
+    return {}
+
+def handle_direction_keys(key):
+    # Movement keys
+    if key.vk == tcod.KEY_UP or key.vk == tcod.KEY_KP8:
+        return {'dir': (0, -1)}
+    elif key.vk == tcod.KEY_DOWN or key.vk == tcod.KEY_KP2:
+        return {'dir': (0, 1)}
+    elif key.vk == tcod.KEY_LEFT or key.vk == tcod.KEY_KP4:
+        return {'dir': (-1, 0)}
+    elif key.vk == tcod.KEY_RIGHT or key.vk == tcod.KEY_KP6:
+        return {'dir': (1, 0)}
+    elif key.vk == tcod.KEY_KP7:
+        return {'dir': (-1, -1)}
+    elif key.vk == tcod.KEY_KP9:
+        return {'dir': (1, -1)}
+    elif key.vk == tcod.KEY_KP1:
+        return {'dir': (-1, 1)}
+    elif key.vk == tcod.KEY_KP3:
+        return {'dir': (1, 1)}
+
+    if key.vk == tcod.KEY_ESCAPE:
+        return {'exit':True}
     return {}
