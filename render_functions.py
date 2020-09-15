@@ -47,8 +47,7 @@ def render_all(con, panel, mouse, entities, player, game_map, fov_map, fov_recom
         # Draw all the tiles in the view
         for y in range(game_map.view_y_min, game_map.view_y_max):
             for x in range(game_map.view_x_min, game_map.view_x_max):
-                #visible = tcod.map_is_in_fov(fov_map, x, y)
-                visible = True
+                visible = tcod.map_is_in_fov(fov_map, x, y) or constants.reveal_map
                 wall = game_map.tiles[x][y].block_sight
                 if visible:
                     if wall:
@@ -83,6 +82,9 @@ def render_all(con, panel, mouse, entities, player, game_map, fov_map, fov_recom
 
     render_bar(panel, 1, 1, constants.bar_width, 'HP', player.fighter.hp, player.fighter.max_hp, tcod.light_red, tcod.darker_red)
     tcod.console_print_ex(panel, 1, 3, tcod.BKGND_NONE, tcod.LEFT, f'Dungeon Level: {game_map.dungeon_level}')
+
+    if constants.show_coordinates:
+        tcod.console_print_ex(panel, 1, 5, tcod.BKGND_NONE, tcod.LEFT, f'x: {player.x} y: {player.y}')
 
     tcod.console_set_default_foreground(panel, tcod.light_gray)
     tcod.console_print_ex(panel, 1, 0, tcod.BKGND_NONE, tcod.LEFT, get_names_under_mouse(mouse, entities, fov_map))

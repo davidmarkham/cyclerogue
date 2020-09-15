@@ -123,7 +123,7 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
             dest_x = player.x + dx
             dest_y = player.y + dy
 
-            if not game_map.is_blocked(dest_x,dest_y):
+            if not game_map.is_blocked(dest_x,dest_y) or constants.no_clipping:
                 target = get_blocking_entities_at_location(entities, dest_x, dest_y)
 
                 if target:

@@ -52,6 +52,11 @@ class Constants:
         'light_ground': tcod.Color(200, 180, 50)
     }
 
+    #Debug flags
+    no_clipping = True
+    reveal_map = True
+    show_coordinates = True
+
 def get_game_variables(constants):
     fighter_component = Fighter(hp=100, defense=1, power=2)
     inventory_conponent = Inventory(26)
