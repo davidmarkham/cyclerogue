@@ -1,7 +1,9 @@
 import tcod
+from config import get_constants
 
+constants = get_constants()
 
-def menu(con, header, options, width, constants):
+def menu(con, header, options, width):
     if len(options) > 26: 
         raise ValueError('Cannot have a menu with more than 26 options.')
 
@@ -31,7 +33,7 @@ def menu(con, header, options, width, constants):
     tcod.console_blit(window, 0, 0, width, height, 0, x, y, 1.0, 0.7)
 
     
-def inventory_menu(con, header, player, inventory_width, constants):
+def inventory_menu(con, header, player, inventory_width):
     # Shows a menu with each item of the inventory as an option
     if len(player.inventory.items) == 0:
         options = ['Inventory is empty.']
@@ -47,26 +49,26 @@ def inventory_menu(con, header, player, inventory_width, constants):
                 options.append(item.display_name)
 
 
-    menu(con, header, options, inventory_width, constants)
+    menu(con, header, options, inventory_width)
 
 
-def main_menu(con, background_image, constants):
+def main_menu(con, background_image):
     tcod.image_blit_2x(background_image, 0, 0, 0)
 
     tcod.console_set_default_foreground(0, tcod.dark_red)
     tcod.console_print_ex(0, int(constants.screen_width / 2), int(constants.screen_height / 2) - 4, tcod.BKGND_NONE, tcod.CENTER, 'CycleRogue')
     tcod.console_print_ex(0, int(constants.screen_width / 2), int(constants.screen_height - 2), tcod.BKGND_NONE, tcod.CENTER, 'By David Markham')
 
-    menu(con, '', ['Play a new game', 'Continue last game', 'Quit'], 24, constants)
+    menu(con, '', ['Play a new game', 'Continue last game', 'Quit'], 24)
 
-def level_up_menu(con, header, player, menu_width, constants):
+def level_up_menu(con, header, player, menu_width):
     options = [f'Constitution (+20 Max HP, from {player.fighter.max_hp}',
                f'Strength (+1 attack, from {player.fighter.power}',
                f'Agility (+1 defense, from {player.fighter.defense}']
 
-    menu(con, header, options, menu_width, constants)
+    menu(con, header, options, menu_width)
 
-def character_screen(player, character_screen_width, character_screen_height, constants):
+def character_screen(player, character_screen_width, character_screen_height):
     window = tcod.console_new(character_screen_width, character_screen_height)
 
     tcod.console_set_default_foreground(window, tcod.white)
@@ -84,5 +86,5 @@ def character_screen(player, character_screen_width, character_screen_height, co
     tcod.console_blit(window, 0, 0, character_screen_width, character_screen_height, 0, x, y, 1.0, 0.7)
     
 
-def message_box(con, header, width, constants):
-    menu(con, header, [], width, constants)
+def message_box(con, header, width):
+    menu(con, header, [], width)

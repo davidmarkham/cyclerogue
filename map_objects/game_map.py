@@ -18,10 +18,13 @@ from render_functions import RenderOrder
 from random_utils import random_choice_from_dict, from_dungeon_level
 from entity_library.monsters import add_monsters_to_room
 from entity_library.items import add_items_to_room
+from config import get_constants
+
+constants = get_constants()
 
 
 class GameMap:
-    def __init__(self, constants, dungeon_level=1):
+    def __init__(self, dungeon_level=1):
         self.width = constants.map_width
         self.height = constants.map_height
         self.tiles = self.initialize_tiles()
@@ -32,18 +35,17 @@ class GameMap:
         self.view_y_min = None
         self.view_x_max = None
         self.view_y_max = None
-
-        self.rooms = []
-        self.tunnels = []
-        self.connected_tiles = []
     
     def initialize_tiles(self):
         tiles = [[Tile(True) for y in range(self.height)] for x in range(self.width)]
 
         return tiles
 
-    def make_map(self, constants, player, entities):
+    def make_map(self, player, entities):
         
+        self.rooms = []
+        self.tunnels = []
+        self.connected_tiles = []
         
         num_rooms = 0
 
@@ -51,14 +53,8 @@ class GameMap:
         center_of_last_room_y = None
 
         for r in range(constants.max_rooms):
-            # Randomly generate rooms
-            w = randint(constants.room_min_size, constants.room_max_size)
-            h = randint(constants.room_min_size, constants.room_max_size)
-            x = randint(0, constants.map_width - w - 1)
-            y = randint(0, constants.map_height - h - 1)
-            
             # Using Rect class for rooms
-            new_room = Rect(x, y, w, h)
+            new_room = Rect()
 
             for other_room in self.rooms:
                 if new_room.intersect(other_room):
@@ -66,70 +62,18 @@ class GameMap:
             else:
                 # if the for loop doesn't get broken out of
                 # paint the map tiles
-                new_room.create_room(self)
-
-                # center coordinates of new room, will be useful later
-                (new_x, new_y) = new_room.center()
-
-                center_of_last_room_x = new_x
-                center_of_last_room_y = new_y
+                new_room.create(self)
 
                 if num_rooms == 0:
                     # start player in first room
+                    (new_x, new_y) = new_room.center()
                     player.x = new_x
                     player.y = new_y
-                    self.set_view_range(player, constants)
+                    self.set_view_range(player)
                 else:
-                    # for subsequent rooms, connect the current one to the nearest one  if it doesn't already touch a tunnel
+                    new_room.connect(self)
 
-                    # check to see if any of the walls are not blocked
-                    connected = False
-                    for i in range(x, x + w):
-                        if not self.tiles[i][y].blocked:
-                            connected = True
-                            break
-                        if y + h + 1 < constants.map_height:
-                            if not self.tiles[i][y+h].blocked:
-                                connected = True
-                                break
-
-                    if not connected:
-                        for i in range(y, y + h):
-                            if not self.tiles[x][i].blocked:
-                                connected = True
-                                break
-                            if x + w + 1 < constants.map_width:
-                                if  not self.tiles[x+w][i].blocked:
-                                    connected = True
-                                    break
-
-                    if not connected:
-                        # find the nearest room
-                        nearest_distance = 9999
-                        nearest_room = self.rooms[0]
-                        if len(self.rooms) > 1:
-                            for room in self.rooms:
-                                (room_x, room_y) = room.center()
-                                distance = sqrt((new_x - room_x) ** 2 + (new_y - room_y) ** 2)
-                                if distance < nearest_distance:
-                                    nearest_distance = distance
-                                    nearest_room = room
-                        (target_x, target_y) = nearest_room.get_random_tile()
-                        (new_x, new_y) = new_room.get_random_tile()
-                        if randint(0,1) == 1:
-                            # horizontal then vertic
-                            new_tunnel = Tunnel(new_x, new_y, target_x, target_y, False)
-                            new_tunnel.create_tunnel(self)
-                            self.tunnels.append(new_tunnel)
-                            self.connected_tiles += new_tunnel.get_tiles()
-                        else:
-                            # vertical then horizontal
-                            new_tunnel = Tunnel(new_x, new_y, target_x, target_y, True)
-                            new_tunnel.create_tunnel(self)
-                            self.tunnels.append(new_tunnel)
-                            self.connected_tiles += new_tunnel.get_tiles()
-
-                self.place_entities(new_room, entities)
+                new_room.place_entities(self, entities)
 
                 # add room to list and increment counter
                 self.rooms.append(new_room)
@@ -137,14 +81,10 @@ class GameMap:
                 num_rooms +=1
 
         stairs_component = Stairs(self.dungeon_level + 1)
+        (center_of_last_room_x, center_of_last_room_y) = self.rooms[-1].center()
         down_stairs = Entity(center_of_last_room_x, center_of_last_room_y, '>', tcod.white, 'Stairs', render_order=RenderOrder.STAIRS, stairs=stairs_component)
         entities.append(down_stairs)
 
-    def place_entities(self, room, entities):
-        #add_monsters_to_room(self.dungeon_level, room, entities)
-        add_items_to_room(self.dungeon_level, room, entities)
-
-        
     
     def is_blocked(self, x, y):
         if self.tiles[x][y].blocked:
@@ -152,11 +92,11 @@ class GameMap:
 
         return False
 
-    def next_floor(self, player, message_log, constants):
+    def next_floor(self, player, message_log):
         self.dungeon_level += 1
         entities = [player]
         self.tiles = self.initialize_tiles()
-        self.make_map(constants, player, entities)
+        self.make_map(player, entities)
 
         player.fighter.heal(player.fighter.max_hp // 2)
 
@@ -164,7 +104,7 @@ class GameMap:
 
         return entities
 
-    def set_view_range(self, player, constants):
+    def set_view_range(self, player):
         self.view_x_min = player.x - constants.view_width // 2
         self.view_y_min = player.y - constants.view_height // 2
         

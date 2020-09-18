@@ -3,19 +3,21 @@ import tcod
 from death_functions import kill_monster, kill_player
 from entity import Entity, get_blocking_entities_at_location
 from input_handlers import handle_keys, handle_mouse, handle_main_menu
-from loader_functions.initialize_new_game import Constants, get_game_variables
+from loader_functions.initialize_new_game import get_game_variables
 from loader_functions.data_loaders import load_game, save_game
 from menus import main_menu, message_box
 from render_functions import clear_all, render_all
 from fov_functions import initialize_fov, recompute_fov
 from game_messages import Message
 from game_states import GameStates
+from config import get_constants
+
+constants = get_constants()
 
 def main():
 
     tcod.console_set_custom_font('arial10x10.png', tcod.FONT_TYPE_GREYSCALE | tcod.FONT_LAYOUT_TCOD)
 
-    constants = Constants()
     tcod.console_init_root(constants.screen_width, constants.screen_height, constants.window_title, False)
 
     con = tcod.console_new(constants.screen_width, constants.screen_height)
@@ -39,10 +41,10 @@ def main():
         tcod.sys_check_for_event(tcod.EVENT_KEY_PRESS | tcod.EVENT_MOUSE, key, mouse)
 
         if show_main_menu:
-            main_menu(con, main_menu_background_image, constants)
+            main_menu(con, main_menu_background_image)
 
             if show_load_error_message:
-                message_box(con, 'No save game to load', 50, constants)
+                message_box(con, 'No save game to load', 50)
 
             tcod.console_flush()
 
@@ -55,7 +57,7 @@ def main():
             if show_load_error_message and (new_game or load_saved_game or exit_game):
                 show_load_error_message = False
             elif new_game:
-                player, entities, game_map, message_log, game_state = get_game_variables(constants)
+                player, entities, game_map, message_log, game_state = get_game_variables()
                 game_state = GameStates.PLAYERS_TURN
                 show_main_menu = False
             elif load_saved_game:
@@ -68,12 +70,13 @@ def main():
                 break
         else:
             tcod.console_clear(con)
-            play_game(player, entities, game_map, message_log, game_state, con, panel, constants)
+            play_game(player, entities, game_map, message_log, game_state, con, panel)
 
             show_main_menu = True
 
-def play_game(player, entities, game_map, message_log, game_state, con, panel, constants):
+def play_game(player, entities, game_map, message_log, game_state, con, panel):
 
+    player.fighter.ignore_damage = constants.ignore_damage
 
     fov_recompute = True
 
@@ -91,7 +94,7 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
         tcod.sys_check_for_event(tcod.EVENT_KEY_PRESS | tcod.EVENT_MOUSE, key, mouse)
         if fov_recompute:
             recompute_fov(fov_map, player.x, player.y, constants.fov_radius, constants.fov_light_walls, constants.fov_algorithm)
-        render_all(con, panel, mouse, entities, player, game_map, fov_map, fov_recompute, message_log, game_state, constants)
+        render_all(con, panel, mouse, entities, player, game_map, fov_map, fov_recompute, message_log, game_state)
         fov_recompute = False
         tcod.console_flush()
 
@@ -282,7 +285,7 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
         if take_stairs and game_state == GameStates.PLAYERS_TURN:
             for entity in entities:
                 if entity.stairs and entity.x == player.x and entity.y == player.y:
-                    entities = game_map.next_floor(player, message_log, constants)
+                    entities = game_map.next_floor(player, message_log)
                     fov_map = initialize_fov(game_map)
                     fov_recompute = True
                     tcod.console_clear(con)

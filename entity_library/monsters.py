@@ -8,6 +8,9 @@ from render_functions import RenderOrder
 from components.ai import BasicMonster, SmartMonster
 from random_utils import from_dungeon_level, random_choice_from_dict
 from monster_functions import *
+from config import get_constants
+
+constants = get_constants()
 
 class Monster:
     def __init__(self, name, char, color, hp, power, defense, xp, occurance, ai_component = BasicMonster()):
@@ -45,14 +48,15 @@ def get_monster_chances(dungeon_level):
     return monster_chances
         
 def add_monsters_to_room(dungeon_level, room, entities):
+    if constants.no_monsters:
+        return None
     max_monsters_per_room = from_dungeon_level(monsters_by_level , dungeon_level)
     number_of_monsters = randint(0, max_monsters_per_room)
     
     monster_chances = get_monster_chances(dungeon_level)
     for i in range(number_of_monsters):
             # randomize location
-            x = randint(room.x1 + 1, room.x2 - 1)
-            y = randint(room.y1 + 1, room.y2 - 1)
+            (x,y) = room.get_random_tile()
 
             if not any([entity for entity in entities if entity.x == x and entity.y == y]):
                 monster_choice = random_choice_from_dict(monster_chances)

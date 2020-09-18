@@ -4,6 +4,9 @@ from enum import Enum, auto
 
 from game_states import GameStates
 from menus import inventory_menu, level_up_menu, character_screen
+from config import get_constants
+
+constants = get_constants()
 
 class RenderOrder(Enum):
     STAIRS = auto()
@@ -32,13 +35,13 @@ def render_bar(panel, x, y, total_width, name, value, maximum, bar_color, back_c
     tcod.console_set_default_foreground(panel, tcod.white)
     tcod.console_print_ex(panel, int(x+total_width / 2), y, tcod.BKGND_NONE, tcod.CENTER, f'{name}: {value}/{maximum}')
 
-def render_all(con, panel, mouse, entities, player, game_map, fov_map, fov_recompute, message_log, game_state, constants):
+def render_all(con, panel, mouse, entities, player, game_map, fov_map, fov_recompute, message_log, game_state):
     # Check to see if the view window needs updating
     if ((player.x < game_map.view_x_min + constants.view_width // 4 and game_map.view_x_min > 0) or 
         (player.y < game_map.view_y_min + constants.view_height // 4 and game_map.view_y_min > 0) or 
         (player.x > game_map.view_x_max - constants.view_width // 4 and game_map.view_x_max < game_map.width) or 
         (player.y > game_map.view_y_max - constants.view_height // 4 and game_map.view_y_max < game_map.height)):
-        game_map.set_view_range(player, constants)
+        game_map.set_view_range(player)
         # clear the view window
         tcod.console_clear(con)
 
@@ -96,12 +99,12 @@ def render_all(con, panel, mouse, entities, player, game_map, fov_map, fov_recom
             inventory_title = 'Press the key next to an item to use it, or Esc to cancel\n'
         else:
             inventory_title = 'Press the key next to an item to drop it, or Esc to cancel\n'
-        inventory_menu(con, inventory_title, player, 50, constants)
+        inventory_menu(con, inventory_title, player, 50)
 
     elif game_state == GameStates.LEVEL_UP:
-        level_up_menu(con, 'Level up! Choose a stat to raise:', player, 40, constants)
+        level_up_menu(con, 'Level up! Choose a stat to raise:', player, 40)
     elif game_state == GameStates.CHARACTER_SCREEN:
-        character_screen(player, 30, 10, constants)
+        character_screen(player, 30, 10)
 
 def clear_all(con, entities, game_map):
     for entity in entities:
@@ -109,8 +112,8 @@ def clear_all(con, entities, game_map):
 
 
 def draw_entity(con, entity, fov_map, game_map):
-    if ((tcod.map_is_in_fov(fov_map, entity.x, entity.y) or (entity.stairs and game_map.tiles[entity.x][entity.y].explored)) and
-        entity.x > game_map.view_x_min and entity.x < game_map.view_x_max and entity.y > game_map.view_y_min and entity.y < game_map.view_y_max):
+    if (constants.see_all or ((tcod.map_is_in_fov(fov_map, entity.x, entity.y) or (entity.stairs and game_map.tiles[entity.x][entity.y].explored)) and
+        entity.x > game_map.view_x_min and entity.x < game_map.view_x_max and entity.y > game_map.view_y_min and entity.y < game_map.view_y_max)):
         tcod.console_set_default_foreground(con, entity.color)
         tcod.console_put_char(con, entity.x - game_map.view_x_min, entity.y - game_map.view_y_min, entity.char, tcod.BKGND_NONE)
 

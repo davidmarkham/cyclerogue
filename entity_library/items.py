@@ -9,6 +9,9 @@ from equipment_slots import EquipmentSlots
 from render_functions import RenderOrder
 from random_utils import from_dungeon_level, random_choice_from_dict
 from item_functions import *
+from config import get_constants
+
+constants = get_constants()
 
 class Item_Template:
     def __init__(self, name, char, color, occurance, use_function=None, targeting=False, targeting_message=None, equippable=None, stackable=False, **kwargs):
@@ -42,10 +45,10 @@ item_library = [
     Item_Template('Fireball Scroll', '#', tcod.red, [[25, 6]], use_function=cast_fireball, stackable=True, targeting=True, targeting_message=Message('Left-click a target tile for the fireball, or right-click to cancel.', tcod.light_cyan), damage=25, radius=3),
     Item_Template('Confusion Scroll', '#', tcod.light_pink, [[10, 2]], use_function=cast_confuse, stackable=True, targeting=True, targeting_message=Message('Left-click an enemy to confuse it, or right-click to cancel.', tcod.light_cyan)),
     Item_Template('Lightning Scroll', '#', tcod.yellow, [[25, 4]], use_function=cast_lightning, stackable=True, damage=40, maximum_range=5),
-    Item_Template('Lightning Wand', '-', tcod.yellow, [[20 ,1]], use_function=wand, cast_function=cast_lightning, damage=40, maximum_range=5, charges=10)
+    Item_Template('Lightning Wand', '-', tcod.yellow, [[5 ,6]], use_function=wand, cast_function=cast_lightning, damage=40, maximum_range=5, charges=10)
 ]
 
-items_by_level = [[10, 1], [2, 4]]
+items_by_level = [[1, 1], [2, 4]]
 
 def get_item_chances(dungeon_level):
     item_chances = {}
@@ -54,14 +57,15 @@ def get_item_chances(dungeon_level):
     return item_chances
         
 def add_items_to_room(dungeon_level, room, entities):
+    if constants.no_items:
+        return None
     max_items_per_room = from_dungeon_level(items_by_level, dungeon_level)
     number_of_items = randint(0, max_items_per_room)
     
     item_chances = get_item_chances(dungeon_level)
     for i in range(number_of_items):
             # randomize location
-            x = randint(room.x1 + 1, room.x2 - 1)
-            y = randint(room.y1 + 1, room.y2 - 1)
+            (x, y) = room.get_random_tile()
 
             if not any([entity for entity in entities if entity.x == x and entity.y == y]):
                 item_choice = random_choice_from_dict(item_chances)

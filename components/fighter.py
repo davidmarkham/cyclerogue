@@ -8,6 +8,7 @@ class Fighter:
         self.base_defense = defense
         self.base_power = power
         self.xp = xp
+        self.ignore_damage = False
 
     @property
     def max_hp(self):
@@ -35,8 +36,9 @@ class Fighter:
     
     def take_damage(self, amount):
         results = []
-
-        self.hp -= amount
+        
+        if not self.ignore_damage:
+            self.hp -= amount
 
         if self.hp <= 0:
             results.append({'dead' : self.owner, 'xp': self.xp})
