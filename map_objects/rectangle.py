@@ -35,6 +35,8 @@ class Rect:
         # returns true if this rectangle intersects with another one
         return (self.x1 <= other.x2 and self.x2 >= other.x1 and self.y1 <= other.y2 and self.y2 >= other.y1)
 
+        
+
     def get_tiles(self):
         return self.tiles
 
@@ -42,12 +44,16 @@ class Rect:
         return choice(self.tiles)
 
     def create(self, game_map):
+        for other_room in game_map.rooms:
+            if self.intersect(other_room):
+                    return False
         # go through the tiles in the rectangle and make them passable
         for x in range(self.x1 + 1, self.x2):
             for y in range(self.y1 + 1, self.y2):
                 game_map.tiles[x][y].blocked = False
                 game_map.tiles[x][y].block_sight = False
                 self.tiles.append((x,y))
+        return True
 
     def connect(self, game_map):
         connected = False

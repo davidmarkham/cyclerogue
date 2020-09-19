@@ -1,6 +1,5 @@
 # Tentative Dev Roadmap
 
-* Finish map generation updates
 * Implement better stats and battle system
 * Add more monsters
 * Extend item functionality and add more items

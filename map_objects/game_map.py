@@ -13,6 +13,7 @@ from game_messages import Message
 from item_functions import heal, cast_lightning, cast_fireball, cast_confuse
 from map_objects.tile import Tile
 from map_objects.rectangle import Rect
+from map_objects.spot import Spot
 from map_objects.tunnel import Tunnel
 from render_functions import RenderOrder
 from random_utils import random_choice_from_dict, from_dungeon_level
@@ -46,6 +47,7 @@ class GameMap:
         self.rooms = []
         self.tunnels = []
         self.connected_tiles = []
+        self.spots = []
         
         num_rooms = 0
 
@@ -56,13 +58,8 @@ class GameMap:
             # Using Rect class for rooms
             new_room = Rect()
 
-            for other_room in self.rooms:
-                if new_room.intersect(other_room):
-                    break
-            else:
-                # if the for loop doesn't get broken out of
-                # paint the map tiles
-                new_room.create(self)
+            if new_room.create(self):
+                # Create the room
 
                 if num_rooms == 0:
                     # start player in first room
@@ -79,6 +76,14 @@ class GameMap:
                 self.rooms.append(new_room)
                 self.connected_tiles += new_room.get_tiles()
                 num_rooms +=1
+
+        for r in range(constants.max_spots):
+            new_spot = Spot()
+            if new_spot.create(self):
+                new_spot.connect(self)
+                new_spot.place_entities(self, entities)
+                self.spots.append(new_spot)
+                self.connected_tiles.extend(new_spot.get_tiles())
 
         stairs_component = Stairs(self.dungeon_level + 1)
         (center_of_last_room_x, center_of_last_room_y) = self.rooms[-1].center()

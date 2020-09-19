@@ -70,5 +70,12 @@ def add_items_to_room(dungeon_level, room, entities):
             if not any([entity for entity in entities if entity.x == x and entity.y == y]):
                 item_choice = random_choice_from_dict(item_chances)
                 entities.append(item_choice.generate(x,y))
+
+def add_item(dungeon_level, x, y, entities):
+    if constants.no_items:
+        return None
+    item_chances = get_item_chances(dungeon_level)
+    item_choice = random_choice_from_dict(item_chances)
+    entities.append(item_choice.generate(x,y))
                 
    

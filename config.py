@@ -24,10 +24,9 @@ class Constants:
     room_max_size = 10
     room_min_size = 6
     max_rooms = 25
-    min_extra_tunnels = 5
-    max_extra_tunnels = 10
-    chance_extra_tunnel_from_tunnel = 80 # Percent
-    random_point_tunnel_chance = 75 # Percent
+    max_spots = 15
+    special_spot_monster_boost = 1
+    special_spot_item_boost = 2
 
     fov_algorithm = 0
     fov_light_walls = True

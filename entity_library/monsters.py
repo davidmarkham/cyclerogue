@@ -61,4 +61,10 @@ def add_monsters_to_room(dungeon_level, room, entities):
             if not any([entity for entity in entities if entity.x == x and entity.y == y]):
                 monster_choice = random_choice_from_dict(monster_chances)
                 entities.append(monster_choice.generate(x,y))
-   
+
+def add_monster(dungeon_level, x, y, entities):
+    if constants.no_monsters:
+        return None
+    monster_chances = get_monster_chances(dungeon_level)
+    monster_choice = random_choice_from_dict(monster_chances)
+    entities.append(monster_choice.generate(x,y))
